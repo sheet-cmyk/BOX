@@ -1,0 +1,3 @@
+-keepattributes Signature,InnerClasses,EnclosingMethod
+-keep class com.stripe.** { *; }
+-dontwarn com.stripe.**

@@ -1,0 +1,1 @@
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android"><item android:drawable="@color/jbb_background"/><item android:drawable="@drawable/jbb_glove" android:gravity="center" android:width="96dp" android:height="96dp"/></layer-list>

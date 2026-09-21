@@ -1,0 +1,49 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function signedIn() { return request.auth != null; }
+    function active() {
+      return signedIn() && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.isActive == true;
+    }
+    function admin() {
+      return active() && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
+    }
+    function owns() { return active() && resource.data.userId == request.auth.uid; }
+    match /users/{uid} {
+      allow read: if signedIn() && (request.auth.uid == uid || admin());
+      allow update: if active() && request.auth.uid == uid
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['fullName', 'phone', 'childName', 'childAge', 'avatarUrl', 'updatedAt', 'notificationPreferences'])
+        && request.resource.data.fullName is string && request.resource.data.fullName.size() > 0 && request.resource.data.fullName.size() <= 100
+        && request.resource.data.phone is string && request.resource.data.phone.size() <= 32
+        && request.resource.data.childName is string && request.resource.data.childName.size() <= 100
+        && request.resource.data.childAge is int && request.resource.data.childAge >= 0 && request.resource.data.childAge <= 120
+        && request.resource.data.avatarUrl is string && request.resource.data.avatarUrl.size() <= 2048
+        && request.resource.data.notificationPreferences.keys().hasOnly(['push', 'email'])
+        && request.resource.data.notificationPreferences.push is bool
+        && request.resource.data.notificationPreferences.email is bool
+        && request.resource.data.updatedAt == request.time;
+      match /devices/{deviceId} {
+        allow read, delete: if active() && request.auth.uid == uid;
+        allow create, update: if active() && request.auth.uid == uid
+          && request.resource.data.keys().hasOnly(['token','platform','updatedAt'])
+          && request.resource.data.token is string && request.resource.data.token.size() <= 4096
+          && request.resource.data.platform in ['android','web','ios']
+          && request.resource.data.updatedAt == request.time;
+      }
+    }
+    match /classes/{id} { allow read: if active(); allow write: if admin(); }
+    match /schedule/{id} { allow read: if active(); }
+    match /recurringTemplates/{id} { allow read, write: if admin(); }
+    match /bookings/{id} { allow read: if owns() || admin(); }
+    match /payments/{id} { allow read: if owns() || admin(); }
+    match /membershipPlans/{id} { allow read: if resource.data.isActive == true || admin(); allow write: if admin(); }
+    match /gymSettings/{id} { allow read: if id == 'config'; allow write: if admin(); }
+    match /notifications/{id} {
+      allow read: if owns() || admin();
+      allow update: if owns() && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['isRead']) && request.resource.data.isRead is bool;
+    }
+    match /announcements/{id} { allow read: if admin(); }
+    match /auditLogs/{id} { allow read: if admin(); }
+    match /{document=**} { allow read, write: if false; }
+  }
+}

@@ -1,0 +1,8 @@
+import { setGlobalOptions } from 'firebase-functions/v2';
+setGlobalOptions({ region: 'us-central1', maxInstances: 20, memory: '256MiB', timeoutSeconds: 120 });
+export { onUserCreated, onUserDeleted, initializeProfile, addMember, updateMember } from './users';
+export { createBooking, cancelBooking, markBookingCompleted, deductSession, cancelClass, onClassCancelled, saveSchedule } from './bookings';
+export { generateWeeklySchedule, generateScheduleNow, sendClassReminders, checkMembershipCredits, getPublicSchedule } from './schedule';
+export { purchaseMembership, createPaymentIntent, handleStripeWebhook, createRefund, recordManualPayment, getPaymentHistory } from './payments';
+export { sendNotification, sendAnnouncement, deliverNotificationOnCreate, retryNotifications, processAnnouncementOnCreate, continueAnnouncements } from './notifications';
+export { getDashboardStats, exportBookingsCSV, contactGym } from './admin';

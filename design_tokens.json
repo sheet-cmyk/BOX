@@ -1,0 +1,222 @@
+{
+  "colors": {
+    "primary": {
+      "crimsonRed": "#E50914",
+      "crimsonRedDark": "#D32F2F",
+      "crimsonRedLight": "#FF1744",
+      "redAccent": "#FF0000"
+    },
+    "background": {
+      "primary": "#0D0D0D",
+      "secondary": "#1A1A1A",
+      "card": "#181818",
+      "cardBorder": "#2A2A2A",
+      "elevated": "#222222"
+    },
+    "text": {
+      "white": "#FFFFFF",
+      "lightGray": "#A0A0A0",
+      "mediumGray": "#808080",
+      "darkGray": "#555555",
+      "red": "#E50914",
+      "green": "#4CAF50"
+    },
+    "status": {
+      "available": "#4CAF50",
+      "limited": "#FF9800",
+      "full": "#E50914",
+      "selected": "#E50914"
+    },
+    "ui": {
+      "divider": "#2A2A2A",
+      "inputBorder": "#333333",
+      "buttonPrimary": "#E50914",
+      "buttonOutline": "#FFFFFF",
+      "navActive": "#E50914",
+      "navInactive": "#808080",
+      "tagBackground": "#1E1E1E",
+      "checkmark": "#E50914"
+    }
+  },
+  "typography": {
+    "fontFamily": {
+      "primary": "Oswald",
+      "secondary": "Roboto",
+      "body": "Roboto",
+      "italic": "Oswald"
+    },
+    "styles": {
+      "heroTitle": {
+        "fontFamily": "Oswald",
+        "fontSize": 36,
+        "fontWeight": "w700",
+        "letterSpacing": 2.0,
+        "color": "#FFFFFF",
+        "note": "Used for 'JUNIOR BOY BOXING' branding"
+      },
+      "heroTitleAccent": {
+        "fontFamily": "Oswald",
+        "fontSize": 36,
+        "fontWeight": "w700",
+        "fontStyle": "italic",
+        "letterSpacing": 2.0,
+        "color": "#E50914",
+        "note": "'BOXING' word in red italic"
+      },
+      "pageTitle": {
+        "fontFamily": "Oswald",
+        "fontSize": 28,
+        "fontWeight": "w700",
+        "letterSpacing": 1.0,
+        "color": "#FFFFFF",
+        "note": "'Class Schedule', 'Choose Your Plan', 'More'"
+      },
+      "sectionTitle": {
+        "fontFamily": "Oswald",
+        "fontSize": 22,
+        "fontWeight": "w600",
+        "letterSpacing": 0.5,
+        "color": "#FFFFFF",
+        "note": "'Our Programs', 'Next Session'"
+      },
+      "cardTitle": {
+        "fontFamily": "Roboto",
+        "fontSize": 18,
+        "fontWeight": "w700",
+        "letterSpacing": 0.3,
+        "color": "#FFFFFF",
+        "note": "'Junior Boxing', 'Group Training'"
+      },
+      "cardSubtitle": {
+        "fontFamily": "Roboto",
+        "fontSize": 14,
+        "fontWeight": "w400",
+        "letterSpacing": 0.2,
+        "color": "#A0A0A0",
+        "note": "'Ages 8-14', '5 classes'"
+      },
+      "bodyText": {
+        "fontFamily": "Roboto",
+        "fontSize": 14,
+        "fontWeight": "w400",
+        "letterSpacing": 0.2,
+        "color": "#A0A0A0"
+      },
+      "labelSmall": {
+        "fontFamily": "Roboto",
+        "fontSize": 11,
+        "fontWeight": "w500",
+        "letterSpacing": 1.5,
+        "textTransform": "uppercase",
+        "color": "#E50914",
+        "note": "'DATE', 'TIME', 'LOCATION', 'AVAILABILITY'"
+      },
+      "tagline": {
+        "fontFamily": "Oswald",
+        "fontSize": 12,
+        "fontWeight": "w400",
+        "letterSpacing": 3.0,
+        "textTransform": "uppercase",
+        "color": "#A0A0A0",
+        "note": "'DISCIPLINE BUILDS CHAMPIONS'"
+      },
+      "motivationalText": {
+        "fontFamily": "Oswald",
+        "fontSize": 11,
+        "fontWeight": "w400",
+        "letterSpacing": 2.0,
+        "textTransform": "uppercase",
+        "color": "#808080",
+        "note": "Side motivational text like 'STRONGER KIDS BRIGHTER TOMORROWS'"
+      },
+      "priceText": {
+        "fontFamily": "Roboto",
+        "fontSize": 22,
+        "fontWeight": "w700",
+        "color": "#FFFFFF"
+      },
+      "priceSubtext": {
+        "fontFamily": "Roboto",
+        "fontSize": 12,
+        "fontWeight": "w400",
+        "color": "#A0A0A0",
+        "note": "'$60 / session'"
+      },
+      "buttonText": {
+        "fontFamily": "Roboto",
+        "fontSize": 16,
+        "fontWeight": "w700",
+        "letterSpacing": 1.0,
+        "color": "#FFFFFF"
+      },
+      "navLabel": {
+        "fontFamily": "Roboto",
+        "fontSize": 11,
+        "fontWeight": "w500",
+        "color": "#808080",
+        "activeColor": "#E50914"
+      },
+      "welcomeName": {
+        "fontFamily": "Oswald",
+        "fontSize": 32,
+        "fontWeight": "w700",
+        "color": "#E50914",
+        "note": "User name on home screen in red"
+      },
+      "dayNumber": {
+        "fontFamily": "Roboto",
+        "fontSize": 22,
+        "fontWeight": "w700",
+        "color": "#FFFFFF",
+        "note": "Calendar day numbers"
+      },
+      "dayLabel": {
+        "fontFamily": "Roboto",
+        "fontSize": 10,
+        "fontWeight": "w500",
+        "letterSpacing": 1.0,
+        "textTransform": "uppercase",
+        "color": "#A0A0A0",
+        "note": "'MON', 'TUE', etc."
+      },
+      "availableSpots": {
+        "fontFamily": "Roboto",
+        "fontSize": 16,
+        "fontWeight": "w700",
+        "color": "#4CAF50",
+        "note": "'10 spots', '5 spots'"
+      }
+    }
+  },
+  "spacing": {
+    "screenPadding": 16,
+    "cardPadding": 16,
+    "cardBorderRadius": 12,
+    "buttonBorderRadius": 8,
+    "iconSize": {
+      "small": 20,
+      "medium": 24,
+      "large": 32,
+      "navBar": 24
+    },
+    "bottomNavHeight": 64
+  },
+  "shadows": {
+    "card": {
+      "color": "#00000040",
+      "blurRadius": 8,
+      "offset": {
+        "x": 0,
+        "y": 2
+      }
+    },
+    "elevatedCard": {
+      "color": "#00000060",
+      "blurRadius": 16,
+      "offset": {
+        "x": 0,
+        "y": 4
+      }
+    }
+  }
+}
