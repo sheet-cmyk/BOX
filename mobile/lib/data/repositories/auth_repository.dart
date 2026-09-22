@@ -20,10 +20,18 @@ class AuthRepository {
     await auth.currentUser!.sendEmailVerification();
   }
   Future<void> googleSignIn() async {
-    await GoogleSignIn.instance.initialize(serverClientId: const String.fromEnvironment('GOOGLE_SERVER_CLIENT_ID').isEmpty ? null : const String.fromEnvironment('GOOGLE_SERVER_CLIENT_ID'));
+    await GoogleSignIn.instance.initialize(serverClientId: const String.fromEnvironment('GOOGLE_SERVER_CLIENT_ID', defaultValue: '772438105367-q284tguvctru8ltf50np6nfck80rhmf3.apps.googleusercontent.com'));
     final account = await GoogleSignIn.instance.authenticate();
     final credential = GoogleAuthProvider.credential(idToken: account.authentication.idToken);
-    await auth.signInWithCredential(credential);
+    if (auth.currentUser?.isAnonymous == true) {
+      await auth.currentUser!.linkWithCredential(credential);
+    } else {
+      await auth.signInWithCredential(credential);
+    }
+    await initializeProfile();
+  }
+  Future<void> continueAsGuest() async {
+    await auth.signInAnonymously();
     await initializeProfile();
   }
   Future<void> signOut() async {

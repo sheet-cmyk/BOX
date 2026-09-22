@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import '../../features/auth/providers/auth_provider.dart';
 import '../../features/profile/providers/profile_provider.dart';
+import '../../data/repositories/user_repository.dart';
 import '../../features/auth/screens/welcome_screen.dart';
 import '../../features/auth/screens/sign_in_screen.dart';
 import '../../features/auth/screens/sign_up_screen.dart';
@@ -16,6 +17,7 @@ import '../../features/membership/screens/membership_screen.dart';
 import '../../features/profile/screens/more_screen.dart';
 import '../../features/profile/screens/my_bookings_screen.dart';
 import '../../features/profile/screens/edit_profile_screen.dart';
+import '../../features/profile/screens/complete_profile_screen.dart';
 import '../../features/profile/screens/notifications_screen.dart';
 import '../../features/profile/screens/contact_screen.dart';
 import '../../features/profile/screens/payments_screen.dart';
@@ -25,10 +27,14 @@ import '../constants/app_strings.dart';
 final connectionProvider = StreamProvider((ref) => Connectivity().onConnectivityChanged);
 final routerProvider = Provider<GoRouter>((ref) {
   final auth = ref.watch(authProvider);
+  final profile = ref.watch(profileProvider);
   final router = GoRouter(initialLocation: auth.value == null ? '/welcome' : '/home', redirect: (context, state) {
     final isAuth = ['/welcome','/signin','/signup','/phone'].contains(state.uri.path);
     if (auth.isLoading) return null;
-    if (auth.value == null && !isAuth) return '/welcome';
+    final user = auth.value;
+    if (user == null && !isAuth) return '/welcome';
+    final signedInWithGoogle = user != null && !user.isAnonymous && user.providerData.any((p) => p.providerId == 'google.com');
+    if (signedInWithGoogle && state.uri.path != '/complete-profile' && (profile.value != null && !isProfileComplete(profile.value!))) return '/complete-profile';
     return null;
   }, routes: [
     GoRoute(path: '/welcome', builder: (c, s) => const WelcomeScreen()),
@@ -40,12 +46,14 @@ final routerProvider = Provider<GoRouter>((ref) {
     GoRoute(path: '/booking-confirmed', builder: (c, s) => const BookingConfirmationScreen()),
     GoRoute(path: '/bookings', builder: (c, s) => const MyBookingsScreen()),
     GoRoute(path: '/profile', builder: (c, s) => const EditProfileScreen()),
+    GoRoute(path: '/complete-profile', builder: (c, s) => const CompleteProfileScreen()),
     GoRoute(path: '/notifications', builder: (c, s) => const NotificationsScreen()),
     GoRoute(path: '/payments', builder: (c, s) => const PaymentsScreen()),
     GoRoute(path: '/contact', builder: (c, s) => const ContactScreen()),
     GoRoute(path: '/about', builder: (c, s) => const _InformationScreen(title: 'About Us')),
     GoRoute(path: '/privacy', builder: (c, s) => const _InformationScreen(title: 'Privacy Policy', text: AppStrings.privacy)),
     GoRoute(path: '/terms', builder: (c, s) => const _InformationScreen(title: 'Terms of Service', text: AppStrings.terms)),
+    GoRoute(path: '/waiver', builder: (c, s) => const _InformationScreen(title: 'Waiver & Disclaimer', text: AppStrings.waiver)),
   ]);
   ref.onDispose(router.dispose);
   return router;

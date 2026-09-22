@@ -3,6 +3,10 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'cached_repository.dart';
+bool isProfileComplete(Map<String, dynamic> user) =>
+    (user['phone'] as String? ?? '').isNotEmpty &&
+    (user['childName'] as String? ?? '').isNotEmpty &&
+    ((user['childAge'] as num?) ?? 0) > 0;
 class UserRepository extends CachedRepository {
   Stream<Map<String, dynamic>> watch() => watchDocument(db.doc('users/$uid'), 'profile');
   Stream<Map<String, dynamic>> settings() => watchDocument(db.doc('gymSettings/config'), 'settings');

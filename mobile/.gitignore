@@ -43,3 +43,6 @@ app.*.map.json
 /android/app/debug
 /android/app/profile
 /android/app/release
+
+# Real Firebase/Stripe config (config.example.json is the tracked template)
+/config.json

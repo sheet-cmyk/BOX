@@ -7,7 +7,7 @@ val keyFile = rootProject.file("key.properties")
 val keys = Properties()
 if (keyFile.exists()) keyFile.inputStream().use { keys.load(it) }
 android {
-    namespace = "com.juniorboyboxing.app"
+    namespace = "com.box.sharif.app"
     compileSdk = flutter.compileSdkVersion
     ndkVersion = flutter.ndkVersion
     compileOptions {
@@ -16,7 +16,7 @@ android {
         isCoreLibraryDesugaringEnabled = true
     }
     defaultConfig {
-        applicationId = "com.juniorboyboxing.app"
+        applicationId = "com.box.sharif.app"
         minSdk = 24
         targetSdk = flutter.targetSdkVersion
         versionCode = flutter.versionCode
