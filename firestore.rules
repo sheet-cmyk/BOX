@@ -44,6 +44,9 @@ service cloud.firestore {
     }
     match /announcements/{id} { allow read: if admin(); }
     match /auditLogs/{id} { allow read: if admin(); }
+    match /legalDocuments/{id} { allow read: if id == 'waiver'; }
+    match /waiverVersions/{id} { allow read: if admin(); }
+    match /waiverAcceptances/{id} { allow read: if owns() || admin(); }
     match /{document=**} { allow read, write: if false; }
   }
 }

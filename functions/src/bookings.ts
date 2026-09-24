@@ -14,6 +14,8 @@ export async function reserveBooking(uid: string, scheduleId: string) {
     const user = userSnap.data(), session = scheduleSnap.data(), old = previous.data();
     if (!user?.isActive) throw new HttpsError('permission-denied', 'Account is not active.');
     if (old?.status === 'confirmed') return { bookingId: ref.id, alreadyBooked: true };
+    const waiver = (await tx.get(db.doc('legalDocuments/waiver'))).data();
+    if (waiver?.published && waiver.requiredOnBooking && (user.waiverVersion !== waiver.version || user.waiverParticipantName !== user.childName?.trim() || user.waiverParticipantAge !== user.childAge)) throw new HttpsError('failed-precondition', 'Read and sign the current Waiver and Disclaimer before booking.');
     if (old && old.status !== 'cancelled') throw new HttpsError('already-exists', 'This booking has already been attended.');
     if (!session || session.isCancelled || session.date.toMillis() <= Date.now()) throw new HttpsError('failed-precondition', 'This class is not available.');
     const classSnap = await tx.get(db.doc(`classes/${session.classId}`));

@@ -9,27 +9,58 @@ abstract class CachedRepository {
   Box get cache => Hive.box('jbb_cache');
   dynamic normalize(dynamic value) {
     if (value is Timestamp) return value.toDate().toIso8601String();
-    if (value is Map) return value.map((key, v) => MapEntry(key.toString(), normalize(v)));
+    if (value is Map) {
+      return value.map((key, v) => MapEntry(key.toString(), normalize(v)));
+}
     if (value is List) return value.map(normalize).toList();
     return value;
   }
-  Stream<List<Map<String, dynamic>>> watchQuery(Query<Map<String, dynamic>> query, String key) async* {
-    final cacheKey = '${FirebaseAuth.instance.currentUser?.uid ?? 'public'}:$key';
+
+  Stream<List<Map<String, dynamic>>> watchQuery(
+    Query<Map<String, dynamic>> query,
+    String key,
+  ) async* {
+    final cacheKey =
+        '${FirebaseAuth.instance.currentUser?.uid ?? 'public'}:$key';
     final stored = cache.get(cacheKey);
-    if (stored is String) yield (jsonDecode(stored) as List).map((e) => Map<String, dynamic>.from(e)).toList();
+    if (stored is String) {
+      yield (jsonDecode(stored) as List)
+          .map((e) => Map<String, dynamic>.from(e))
+          .toList();
+}
     await for (final snapshot in query.snapshots()) {
-      final rows = snapshot.docs.map((d) => <String, dynamic>{...Map<String, dynamic>.from(normalize(d.data())), 'id': d.id}).toList();
+      if (snapshot.metadata.isFromCache &&
+          snapshot.docs.isEmpty &&
+          stored is String) {
+        continue;
+}
+      final rows = snapshot.docs
+          .map(
+            (d) => <String, dynamic>{
+              ...Map<String, dynamic>.from(normalize(d.data())),
+              'id': d.id,
+            },
+          )
+          .toList();
       await cache.put(cacheKey, jsonEncode(rows));
       yield rows;
     }
   }
-  Stream<Map<String, dynamic>> watchDocument(DocumentReference<Map<String, dynamic>> ref, String key) async* {
-    final cacheKey = '${FirebaseAuth.instance.currentUser?.uid ?? 'public'}:$key';
+
+  Stream<Map<String, dynamic>> watchDocument(
+    DocumentReference<Map<String, dynamic>> ref,
+    String key,
+  ) async* {
+    final cacheKey =
+        '${FirebaseAuth.instance.currentUser?.uid ?? 'public'}:$key';
     final stored = cache.get(cacheKey);
     if (stored is String) yield Map<String, dynamic>.from(jsonDecode(stored));
     await for (final snapshot in ref.snapshots()) {
       if (!snapshot.exists) continue;
-      final row = <String, dynamic>{...Map<String, dynamic>.from(normalize(snapshot.data()!)), 'id': snapshot.id};
+      final row = <String, dynamic>{
+        ...Map<String, dynamic>.from(normalize(snapshot.data()!)),
+        'id': snapshot.id,
+      };
       await cache.put(cacheKey, jsonEncode(row));
       yield row;
     }

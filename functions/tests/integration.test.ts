@@ -27,6 +27,30 @@ test('concurrent members cannot overbook the last seat', async () => {
   assert.equal(results.filter(r => r.status === 'fulfilled').length, 1);
   assert.equal((await db.doc('schedule/last').get()).data()!.bookedSpots, 1);
 });
+
+test('waiver requires current version, guardian for minors, and renewed agreement after participant changes', async () => {
+  const { recordWaiver } = await import('../src/waiver');
+  await member('a'); await session('waiver-class');
+  await db.doc('users/a').update({childName:'Young Boxer',childAge:12});
+  const version = 'a'.repeat(64);
+  await db.doc('legalDocuments/waiver').set({version,published:true,requiredOnBooking:true,body:'Approved test text'});
+  await assert.rejects(bookings.reserveBooking('a','waiver-class'),/Waiver/);
+  const input = {version,signerName:'Parent Boxer',capacity:'guardian' as const,adult:true as const,agree:true as const};
+  await assert.rejects(recordWaiver('a',{...input,version:'b'.repeat(64)}),/changed/);
+  await assert.rejects(recordWaiver('a',{...input,capacity:'participant'}),/guardian/);
+  await Promise.all([recordWaiver('a',input),recordWaiver('a',input)]);
+  assert.equal((await db.collection('waiverAcceptances').get()).size,1);
+  await bookings.reserveBooking('a','waiver-class');
+  await bookings.releaseBooking('a','a_waiver-class');
+  await db.doc('users/a').update({childName:'Another Boxer'});
+  await assert.rejects(bookings.reserveBooking('a','waiver-class'),/Waiver/);
+});
+
+test('anonymous accounts cannot initiate payment or sign an agreement', async () => {
+  const { requireRegistered } = await import('../src/platform');
+  assert.throws(()=>requireRegistered({auth:{uid:'guest',token:{firebase:{sign_in_provider:'anonymous'}}}} as any),/Sign in/);
+  assert.equal(requireRegistered({auth:{uid:'member',token:{firebase:{sign_in_provider:'google.com'}}}} as any),'member');
+});
 test('duplicate booking request is idempotent', async () => {
   await member('a'); await session('one', 3);
   await Promise.all([bookings.reserveBooking('a', 'one'), bookings.reserveBooking('a', 'one')]);

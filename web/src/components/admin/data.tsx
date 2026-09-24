@@ -8,7 +8,7 @@ export function usePaged(name:string,field:string,filters:QueryConstraint[]=[],f
   const [pages,setPages]=useState<Array<[unknown,string]|null>>([null]);
   const [key,setKey]=useState(filterKey);
   if(key!==filterKey){setKey(filterKey);setPages([null]);}
-  const cursor=pages.at(-1),direction=field==='fullName'?'asc':'desc';
+  const cursor=pages.at(-1),direction=['fullName','email'].includes(field)?'asc':'desc';
   const constraints=[...filters,orderBy(field,direction),orderBy(documentId(),direction),...(cursor?[startAfter(...cursor)]:[]),limit(26)];
   const data=useRows(name,constraints,`${field}:${filterKey}:${JSON.stringify(cursor)}`);
   const rows=data.rows.slice(0,25);

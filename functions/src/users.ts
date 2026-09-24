@@ -65,9 +65,8 @@ export const addMember = callable(z.object({ email: z.email(), fullName: z.strin
   const user = await auth.createUser({ email: input.email, displayName: input.fullName });
   await ensureUser(user);
   await db.doc(`users/${user.uid}`).update({ phone: input.phone });
-  const link = await auth.generatePasswordResetLink(input.email);
   await db.runTransaction(async tx => {
-    notify(tx, `invite_${user.uid}`, user.uid, 'Set up your account', `Your gym account has been created. Set your password: ${link}`, 'welcome');
+    notify(tx, `invite_${user.uid}`, user.uid, 'Set up your account', 'Your gym account has been created. Use Forgot password on the sign-in page to securely set your password.', 'welcome');
   });
   return { userId: user.uid };
 }, true);

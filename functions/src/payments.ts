@@ -3,7 +3,7 @@ import { defineSecret } from 'firebase-functions/params';
 import { HttpsError, onCall, onRequest } from 'firebase-functions/v2/https';
 import { logger } from 'firebase-functions';
 import { z } from 'zod';
-import { audit, callable, db, emulator, id, notify, now, rateLimit, requireAuth, requireMember } from './platform';
+import { audit, callable, db, emulator, id, notify, now, rateLimit, requireAuth, requireRegistered, requireMember } from './platform';
 
 const STRIPE_SECRET_KEY = defineSecret('STRIPE_SECRET_KEY');
 const STRIPE_WEBHOOK_SECRET = defineSecret('STRIPE_WEBHOOK_SECRET');
@@ -11,8 +11,9 @@ const stripe = () => new Stripe(STRIPE_SECRET_KEY.value());
 const purchaseSchema = z.object({ planId: id, requestId: z.string().uuid() });
 
 export const createPaymentIntent = onCall({ secrets: [STRIPE_SECRET_KEY], enforceAppCheck: !emulator, maxInstances: 20 }, async request => {
-  const uid = requireAuth(request);
+  const uid = requireRegistered(request);
   const user = await requireMember(uid);
+  if (!user.phone?.trim() || !user.childName?.trim() || !Number.isInteger(user.childAge) || user.childAge < 1) throw new HttpsError('failed-precondition', 'Complete your phone number and participant details in Profile Settings before purchasing.');
   await rateLimit(uid, 'payment', 8);
   const input = purchaseSchema.safeParse(request.data);
   if (!input.success) throw new HttpsError('invalid-argument', 'A plan and unique request ID are required.');
@@ -22,7 +23,7 @@ export const createPaymentIntent = onCall({ secrets: [STRIPE_SECRET_KEY], enforc
     const [old, planSnap] = await Promise.all([tx.get(ref), tx.get(db.doc(`membershipPlans/${planId}`))]);
     if (old.exists) {
       if (old.data()!.membershipPlanId !== planId) throw new HttpsError('already-exists', 'Use a new checkout request when changing plans.');
-      if (Date.now() - old.data()!.createdAt.toMillis() > 23 * 3_600_000) throw new HttpsError('failed-precondition', 'Checkout expired. Start a new checkout.');
+      if (!old.data()!.stripePaymentIntentId && Date.now() - old.data()!.createdAt.toMillis() > 23 * 3_600_000) throw new HttpsError('failed-precondition', 'Checkout expired. Start a new checkout.', { reason: 'checkout-expired' });
       return old.data()!;
     }
     const plan = planSnap.data();
@@ -126,9 +127,12 @@ export const recordManualPayment = callable(z.object({ userId: id, planId: id, r
   const ref = db.doc(`payments/manual_${input.requestId}`);
   await db.runTransaction(async tx => {
     const [old, plan, user] = await Promise.all([tx.get(ref), tx.get(db.doc(`membershipPlans/${input.planId}`)), tx.get(db.doc(`users/${input.userId}`))]);
-    if (old.exists) return;
+    if (old.exists) {
+      if (old.data()!.userId !== input.userId || old.data()!.membershipPlanId !== input.planId || old.data()!.paymentMethod !== input.method) throw new HttpsError('already-exists', 'This request was already used for a different payment.');
+      return;
+    }
     const p = plan.data(), u = user.data(), credits = p?.sessionCount ?? p?.creditsPerPurchase;
-    if (!p?.isActive || !u?.isActive || !Number.isInteger(credits) || credits <= 0) throw new HttpsError('failed-precondition', 'Select an active member and plan.');
+    if (!p?.isActive || !u?.isActive || !Number.isInteger(credits) || credits <= 0 || !Number.isInteger(p.price) || p.price <= 0) throw new HttpsError('failed-precondition', 'Select an active member and plan with a valid price.');
     tx.create(ref, { userId: input.userId, membershipPlanId: input.planId, amount: p.price, currency: 'usd', credits, status: 'completed', paymentMethod: input.method, stripePaymentIntentId: null, receiptUrl: null, note: input.note, createdAt: now(), updatedAt: now(), paidAt: now() });
     tx.update(user.ref, { sessionsRemaining: u.sessionsRemaining + credits, membershipPlanId: input.planId, updatedAt: now() });
     notify(tx, `payment_${ref.id}`, input.userId, 'Payment recorded', `${credits} session credits were added to your account.`, 'membership_purchased');

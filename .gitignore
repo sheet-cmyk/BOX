@@ -21,3 +21,6 @@ GoogleService-Info.plist
 service-account*.json
 coverage/
 test-results/
+.next-ui/
+playwright-report/
+test-results/

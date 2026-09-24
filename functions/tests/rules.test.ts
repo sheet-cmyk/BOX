@@ -46,6 +46,20 @@ test('notification recipients can mark read but cannot alter contents', async ()
   await assertSucceeds(updateDoc(doc(db, 'notifications', 'n'), { isRead: true }));
   await assertFails(updateDoc(doc(db, 'notifications', 'n'), { body: 'Forged' }));
 });
+
+test('waivers are public to read, but publication and acceptance cannot be forged', async () => {
+  const member = env.authenticatedContext('alice').firestore();
+  await assertSucceeds(getDoc(doc(env.unauthenticatedContext().firestore(),'legalDocuments','waiver')));
+  await assertFails(setDoc(doc(member,'legalDocuments','waiver'),{published:true}));
+  await assertFails(setDoc(doc(member,'waiverAcceptances','forged'),{userId:'alice',acceptedAt:serverTimestamp()}));
+  await assertFails(updateDoc(doc(member,'users','alice'),{waiverVersion:'forged'}));
+  await env.withSecurityRulesDisabled(async context => {
+    await setDoc(doc(context.firestore(),'waiverAcceptances','real'),{userId:'alice',version:'test'});
+  });
+  await assertSucceeds(getDoc(doc(member,'waiverAcceptances','real')));
+  await assertFails(getDoc(doc(env.authenticatedContext('bob').firestore(),'waiverAcceptances','real')));
+  await assertFails(updateDoc(doc(member,'waiverAcceptances','real'),{version:'changed'}));
+});
 test('admin reads are allowed but accounting writes still require trusted functions', async () => {
   const db = env.authenticatedContext('admin').firestore();
   await assertSucceeds(getDoc(doc(db, 'users', 'alice')));

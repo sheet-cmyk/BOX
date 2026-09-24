@@ -2,11 +2,14 @@
 import { where } from 'firebase/firestore';
 import { Check, ShieldCheck } from 'lucide-react';
 import { useRows } from '@/lib/hooks';
-import { Plan, plans as initialPlans } from '@/lib/types';
-import { ActionLink } from './ui';
+import { Plan } from '@/lib/types';
+import { ActionLink, Loading, Notice, Empty } from './ui';
 export function Pricing({compact=false}:{compact?:boolean}) {
-  const {rows}=useRows('membershipPlans',[where('isActive','==',true)]);
-  const plans=(rows.length?rows:initialPlans) as Plan[];
+  const {rows,loading,error}=useRows('membershipPlans',[where('isActive','==',true)]);
+  const plans=rows as Plan[];
+  if (loading) return <Loading/>;
+  if (error) return <Notice error>{error}</Notice>;
+  if (!plans.length) return <Empty>Plans are not available yet. Contact the gym for pricing.</Empty>;
   const visible=[...plans].sort((a,b)=>a.sortOrder-b.sortOrder).filter(p=>!compact||p.planType==='package');
   return <><div className="plan-grid">{visible.map(p=><article className={`plan ${p.isRecommended?'recommended':''}`} key={p.id}>{p.isRecommended&&<span className="tag">RECOMMENDED</span>}<h3>{p.name}</h3><span className="price">{p.priceLabel}</span><p className="rate">{p.perSessionLabel}</p><ul><li><Check/>{p.sessionCount?`${p.sessionCount} coached ${p.sessionCount===1?'session':'sessions'}`:'One hour of focused training'}</li><li><Check/>Boxing fundamentals & conditioning</li><li><Check/>Book sessions at your pace</li></ul><ActionLink href={`/checkout?plan=${p.id}`} secondary={!p.isRecommended}>Choose this plan</ActionLink></article>)}</div><p className="row muted" style={{fontSize:11,marginTop:20}}><ShieldCheck size={15}/>Secure payments. No automatic renewal.</p></>;
 }

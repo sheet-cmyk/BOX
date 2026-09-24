@@ -15,6 +15,11 @@ export function requireAuth(request: CallableRequest): string {
   if (!request.auth) throw new HttpsError('unauthenticated', 'Please sign in.');
   return request.auth.uid;
 }
+export function requireRegistered(request: CallableRequest): string {
+  const uid = requireAuth(request);
+  if (request.auth!.token.firebase?.sign_in_provider === 'anonymous') throw new HttpsError('unauthenticated', 'Sign in with Google, email or phone to continue.');
+  return uid;
+}
 export async function requireMember(uid: string, admin = false) {
   const snapshot = await db.doc(`users/${uid}`).get();
   const user = snapshot.data();
@@ -34,7 +39,7 @@ export async function rateLimit(uid: string, operation: string, max = 30): Promi
 }
 export function callable<T>(schema: ZodType<T>, operation: string, handler: (data: T, uid: string) => Promise<unknown>, admin = false) {
   return onCall({ enforceAppCheck: !emulator, region: 'us-central1', timeoutSeconds: 120, memory: '256MiB', maxInstances: 20 }, async request => {
-    const uid = requireAuth(request);
+    const uid = requireRegistered(request);
     const parsed = schema.safeParse(request.data);
     if (!parsed.success) throw new HttpsError('invalid-argument', 'Invalid input.', parsed.error.flatten());
     await requireMember(uid, admin);
