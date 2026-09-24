@@ -16,6 +16,7 @@ import '../../features/schedule/screens/schedule_screen.dart';
 import '../../features/booking/screens/book_class_screen.dart';
 import '../../features/booking/screens/booking_confirmation_screen.dart';
 import '../../features/membership/screens/membership_screen.dart';
+import '../../features/store/screens/store_screen.dart';
 import '../../features/profile/screens/more_screen.dart';
 import '../../features/profile/screens/my_bookings_screen.dart';
 import '../../features/profile/screens/edit_profile_screen.dart';
@@ -86,6 +87,7 @@ final routerProvider = Provider<GoRouter>((ref) {
             builder: (c, s) => const MembershipScreen(),
           ),
           GoRoute(path: '/more', builder: (c, s) => const MoreScreen()),
+          GoRoute(path: '/store', builder: (c, s) => const StoreScreen()),
         ],
       ),
       GoRoute(

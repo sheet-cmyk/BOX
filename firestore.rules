@@ -37,6 +37,7 @@ service cloud.firestore {
     match /bookings/{id} { allow read: if owns() || admin(); }
     match /payments/{id} { allow read: if owns() || admin(); }
     match /membershipPlans/{id} { allow read: if resource.data.isActive == true || admin(); allow write: if admin(); }
+    match /products/{id} { allow read: if resource.data.isActive == true || admin(); allow write: if admin(); }
     match /gymSettings/{id} { allow read: if id == 'config'; allow write: if admin(); }
     match /notifications/{id} {
       allow read: if owns() || admin();
