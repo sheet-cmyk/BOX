@@ -7,33 +7,60 @@ import '../../../core/widgets/jbb_card.dart';
 import '../../../core/widgets/jbb_loading.dart';
 import '../../../core/widgets/jbb_empty_state.dart';
 import '../../../core/utils/snackbar_utils.dart';
+import '../../profile/providers/profile_provider.dart';
 import '../providers/store_provider.dart';
+import 'product_editor_screen.dart';
 
 class StoreScreen extends ConsumerWidget {
   const StoreScreen({super.key});
   @override
-  Widget build(BuildContext context, WidgetRef ref) => PageContent(
-    title: 'Gym Store',
-    children: [
-      ref
-          .watch(productsProvider)
-          .when(
+  Widget build(BuildContext context, WidgetRef ref) {
+    final isAdmin = ref.watch(profileProvider).value?['role'] == 'admin';
+    final products = ref.watch(
+      isAdmin ? productsAdminProvider : productsProvider,
+    );
+    return Scaffold(
+      floatingActionButton: isAdmin
+          ? FloatingActionButton.extended(
+              onPressed: () => Navigator.of(context).push(
+                MaterialPageRoute(
+                  builder: (_) => const ProductEditorScreen(),
+                ),
+              ),
+              icon: const Icon(Icons.add),
+              label: const Text('Add Product'),
+            )
+          : null,
+      body: PageContent(
+        title: 'Gym Store',
+        children: [
+          products.when(
             data: (rows) {
-              final products = [...rows]
+              final sorted = [...rows]
                 ..sort(
                   (a, b) => (a['sortOrder'] as num? ?? 0).compareTo(
                     b['sortOrder'] as num? ?? 0,
                   ),
                 );
-              if (products.isEmpty) {
-                return const JbbEmptyState(
-                  message: 'Products will appear here when available.',
+              if (sorted.isEmpty) {
+                return JbbEmptyState(
+                  message: isAdmin
+                      ? 'No products yet. Tap Add Product to create your first one.'
+                      : 'Products will appear here when available.',
                 );
               }
               return Column(
                 children: [
-                  for (final product in products)
+                  for (final product in sorted)
                     JbbCard(
+                      onTap: isAdmin
+                          ? () => Navigator.of(context).push(
+                              MaterialPageRoute(
+                                builder: (_) =>
+                                    ProductEditorScreen(product: product),
+                              ),
+                            )
+                          : null,
                       child: Row(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
@@ -55,12 +82,30 @@ class StoreScreen extends ConsumerWidget {
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                Text(
-                                  product['name'] ?? '',
-                                  style: const TextStyle(
-                                    fontWeight: FontWeight.bold,
-                                    fontSize: 16,
-                                  ),
+                                Row(
+                                  children: [
+                                    Expanded(
+                                      child: Text(
+                                        product['name'] ?? '',
+                                        style: const TextStyle(
+                                          fontWeight: FontWeight.bold,
+                                          fontSize: 16,
+                                        ),
+                                      ),
+                                    ),
+                                    if (isAdmin && product['isActive'] != true)
+                                      const Padding(
+                                        padding: EdgeInsets.only(left: 8),
+                                        child: Text(
+                                          'HIDDEN',
+                                          style: TextStyle(
+                                            color: Colors.amber,
+                                            fontSize: 11,
+                                            fontWeight: FontWeight.bold,
+                                          ),
+                                        ),
+                                      ),
+                                  ],
                                 ),
                                 if ((product['description'] ?? '')
                                     .isNotEmpty) ...[
@@ -87,25 +132,33 @@ class StoreScreen extends ConsumerWidget {
                               ],
                             ),
                           ),
+                          if (isAdmin)
+                            const Icon(Icons.chevron_right, color: Colors.grey),
                         ],
                       ),
                     ),
-                  const SizedBox(height: 8),
-                  TextButton(
-                    onPressed: () => context.push('/contact'),
-                    child: const Text('Ask the gym to order an item'),
-                  ),
+                  if (!isAdmin) ...[
+                    const SizedBox(height: 8),
+                    TextButton(
+                      onPressed: () => context.push('/contact'),
+                      child: const Text('Ask the gym to order an item'),
+                    ),
+                  ],
                 ],
               );
             },
             error: (e, s) => JbbEmptyState(
               message: friendlyError(e),
-              onRetry: () => ref.invalidate(productsProvider),
+              onRetry: () => ref.invalidate(
+                isAdmin ? productsAdminProvider : productsProvider,
+              ),
             ),
             loading: () => const JbbLoading(),
           ),
-    ],
-  );
+        ],
+      ),
+    );
+  }
 }
 
 class _ProductPlaceholder extends StatelessWidget {
