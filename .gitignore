@@ -1,7 +1,5 @@
 node_modules/
-lib/
-!mobile/lib/
-!mobile/lib/**
+functions/lib/
 .next/
 out/
 build/
