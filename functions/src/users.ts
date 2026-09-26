@@ -3,7 +3,7 @@ import { z } from 'zod';
 import { HttpsError, onCall } from 'firebase-functions/v2/https';
 import { getStorage } from 'firebase-admin/storage';
 import { UserRecord } from 'firebase-admin/auth';
-import { audit, auth, callable, db, emulator, id, notify, now, rateLimit, requireAuth } from './platform';
+import { audit, auth, callable, db, emulator, enforceAppCheck, id, notify, now, rateLimit, requireAuth } from './platform';
 import { releaseBooking } from './bookings';
 
 export async function ensureUser(user: UserRecord) {
@@ -20,7 +20,7 @@ export async function ensureUser(user: UserRecord) {
   });
 }
 export const onUserCreated = v1.region('us-central1').runWith({ failurePolicy: true }).auth.user().onCreate(ensureUser);
-export const initializeProfile = onCall({ enforceAppCheck: !emulator }, async request => {
+export const initializeProfile = onCall({ enforceAppCheck }, async request => {
   const uid = requireAuth(request);
   await rateLimit(uid, 'initializeProfile', 10);
   const user = await auth.getUser(uid);

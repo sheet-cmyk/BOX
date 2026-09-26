@@ -3,14 +3,14 @@ import { defineSecret } from 'firebase-functions/params';
 import { HttpsError, onCall, onRequest } from 'firebase-functions/v2/https';
 import { logger } from 'firebase-functions';
 import { z } from 'zod';
-import { audit, callable, db, emulator, id, notify, now, rateLimit, requireAuth, requireRegistered, requireMember } from './platform';
+import { audit, callable, db, emulator, enforceAppCheck, id, notify, now, rateLimit, requireAuth, requireRegistered, requireMember } from './platform';
 
 const STRIPE_SECRET_KEY = defineSecret('STRIPE_SECRET_KEY');
 const STRIPE_WEBHOOK_SECRET = defineSecret('STRIPE_WEBHOOK_SECRET');
 const stripe = () => new Stripe(STRIPE_SECRET_KEY.value());
 const purchaseSchema = z.object({ planId: id, requestId: z.string().uuid() });
 
-export const createPaymentIntent = onCall({ secrets: [STRIPE_SECRET_KEY], enforceAppCheck: !emulator, maxInstances: 20 }, async request => {
+export const createPaymentIntent = onCall({ secrets: [STRIPE_SECRET_KEY], enforceAppCheck, maxInstances: 20 }, async request => {
   const uid = requireRegistered(request);
   const user = await requireMember(uid);
   if (!user.phone?.trim() || !user.childName?.trim() || !Number.isInteger(user.childAge) || user.childAge < 1) throw new HttpsError('failed-precondition', 'Complete your phone number and participant details in Profile Settings before purchasing.');
@@ -99,7 +99,7 @@ async function settleRefund(refund: Stripe.Refund) {
     }
   });
 }
-export const createRefund = onCall({ secrets: [STRIPE_SECRET_KEY], enforceAppCheck: !emulator }, async request => {
+export const createRefund = onCall({ secrets: [STRIPE_SECRET_KEY], enforceAppCheck }, async request => {
   const uid = requireAuth(request); await requireMember(uid, true); await rateLimit(uid, 'refund', 10);
   const input = z.object({ paymentId: id }).safeParse(request.data);
   if (!input.success) throw new HttpsError('invalid-argument', 'Payment ID is required.');

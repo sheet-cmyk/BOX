@@ -60,8 +60,8 @@ export const getPublicSchedule = callablePublicSchedule();
 function callablePublicSchedule() {
   // Public marketing receives only a sanitized projection, never member records.
   const { onCall, HttpsError } = require('firebase-functions/v2/https') as typeof import('firebase-functions/v2/https');
-  const { emulator } = require('./platform') as typeof import('./platform');
-  return onCall({ enforceAppCheck: !emulator, maxInstances: 10 }, async request => {
+  const { enforceAppCheck } = require('./platform') as typeof import('./platform');
+  return onCall({ enforceAppCheck, maxInstances: 10 }, async request => {
     const parsed = z.object({ from: z.string().datetime(), to: z.string().datetime() }).safeParse(request.data);
     if (!parsed.success) throw new HttpsError('invalid-argument', 'Select a date range.');
     const from = Date.parse(parsed.data.from), to = Date.parse(parsed.data.to);

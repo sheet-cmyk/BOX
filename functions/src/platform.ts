@@ -8,6 +8,10 @@ if (!getApps().length) initializeApp();
 export const db = getFirestore();
 export const auth = getAuth();
 export const emulator = process.env.FUNCTIONS_EMULATOR === 'true' || Boolean(process.env.FIRESTORE_EMULATOR_HOST);
+// Temporarily off pre-launch: reCAPTCHA Enterprise App Check scoring has been
+// throttling real sign-ins (403, ~24h lockout) for this low-traffic new site.
+// Flip back to `!emulator` once App Check is verified reliable for real users.
+export const enforceAppCheck = false;
 export const id = z.string().min(1).max(128).regex(/^[a-zA-Z0-9_-]+$/);
 export const zone = process.env.GYM_TIMEZONE || 'America/Los_Angeles';
 export const now = () => Timestamp.now();
@@ -38,7 +42,7 @@ export async function rateLimit(uid: string, operation: string, max = 30): Promi
   });
 }
 export function callable<T>(schema: ZodType<T>, operation: string, handler: (data: T, uid: string) => Promise<unknown>, admin = false) {
-  return onCall({ enforceAppCheck: !emulator, region: 'us-central1', timeoutSeconds: 120, memory: '256MiB', maxInstances: 20 }, async request => {
+  return onCall({ enforceAppCheck, region: 'us-central1', timeoutSeconds: 120, memory: '256MiB', maxInstances: 20 }, async request => {
     const uid = requireRegistered(request);
     const parsed = schema.safeParse(request.data);
     if (!parsed.success) throw new HttpsError('invalid-argument', 'Invalid input.', parsed.error.flatten());

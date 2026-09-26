@@ -3,7 +3,7 @@ import { DateTime } from 'luxon';
 import { Timestamp } from 'firebase-admin/firestore';
 import { HttpsError, onCall } from 'firebase-functions/v2/https';
 import { z } from 'zod';
-import { callable, db, emulator, notify, now, rateLimit, zone } from './platform';
+import { callable, db, emulator, enforceAppCheck, notify, now, rateLimit, zone } from './platform';
 import { csvCell } from './domain';
 
 export const getDashboardStats = callable(z.object({}), 'dashboard', async () => {
@@ -37,7 +37,7 @@ export const exportBookingsCSV = callable(z.object({ from: z.string().datetime()
   return { csv, filename: `${input.collection}-${from.toISOString().slice(0, 10)}.csv` };
 }, true);
 
-export const contactGym = onCall({ enforceAppCheck: !emulator, maxInstances: 5 }, async request => {
+export const contactGym = onCall({ enforceAppCheck, maxInstances: 5 }, async request => {
   const input = z.object({ name: z.string().min(2).max(100), email: z.email().max(254), message: z.string().min(10).max(4000), website: z.string().max(0).default('') }).safeParse(request.data);
   if (!input.success) throw new HttpsError('invalid-argument', 'Check your name, email and message.');
   const ipHash = createHash('sha256').update(request.rawRequest.ip || 'unknown').digest('hex');
