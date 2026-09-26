@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:webview_flutter/webview_flutter.dart';
+import 'package:webview_flutter_android/webview_flutter_android.dart';
 
 /// Extracts an 11-character YouTube video id from any common URL shape
 /// (watch?v=, youtu.be/, embed/). Returns null if none is found.
@@ -16,7 +17,8 @@ String? extractYoutubeId(String url) {
 
 /// Plays a YouTube video as a silent, looping, chrome-free background
 /// clip: autoplay, muted, no controls, no related videos, minimal
-/// branding, and not tappable — purely ambient, like a video banner.
+/// branding. An [AbsorbPointer] makes it purely decorative — nothing the
+/// viewer taps ever reaches the embedded player.
 class YoutubeBackgroundPlayer extends StatefulWidget {
   const YoutubeBackgroundPlayer({super.key, required this.videoId});
   final String videoId;
@@ -26,31 +28,43 @@ class YoutubeBackgroundPlayer extends StatefulWidget {
 }
 
 class _YoutubeBackgroundPlayerState extends State<YoutubeBackgroundPlayer> {
-  late final controller = WebViewController()
-    ..setJavaScriptMode(JavaScriptMode.unrestricted)
-    ..setBackgroundColor(Colors.black)
-    ..loadHtmlString(_html(widget.videoId));
+  late final WebViewController controller;
 
-  static String _html(String id) =>
-      '''
-<!DOCTYPE html><html><head><meta name="viewport" content="width=device-width, initial-scale=1"><style>
-html,body{margin:0;padding:0;background:#000;overflow:hidden;height:100%;width:100%;}
-.wrap{position:relative;width:100%;height:100%;}
-iframe{position:absolute;top:50%;left:50%;width:100%;height:100%;min-width:177.77vh;min-height:100%;transform:translate(-50%,-50%);border:0;pointer-events:none;}
-</style></head><body>
-<div class="wrap"><iframe
-  src="https://www.youtube.com/embed/$id?autoplay=1&mute=1&loop=1&playlist=$id&controls=0&modestbranding=1&rel=0&showinfo=0&iv_load_policy=3&disablekb=1&fs=0&playsinline=1&enablejsapi=0"
-  allow="autoplay; encrypted-media"
-  allowfullscreen></iframe></div>
-</body></html>
-''';
+  @override
+  void initState() {
+    super.initState();
+    controller = WebViewController()
+      ..setJavaScriptMode(JavaScriptMode.unrestricted)
+      ..setBackgroundColor(Colors.black);
+    // Android WebView blocks autoplaying media by default unless this is
+    // explicitly disabled — without it, muted autoplay silently fails.
+    final platform = controller.platform;
+    if (platform is AndroidWebViewController) {
+      platform.setMediaPlaybackRequiresUserGesture(false);
+    }
+    controller.loadRequest(
+      Uri.https('www.youtube.com', '/embed/${widget.videoId}', {
+        'autoplay': '1',
+        'mute': '1',
+        'loop': '1',
+        'playlist': widget.videoId,
+        'controls': '0',
+        'modestbranding': '1',
+        'rel': '0',
+        'iv_load_policy': '3',
+        'disablekb': '1',
+        'fs': '0',
+        'playsinline': '1',
+      }),
+    );
+  }
 
   @override
   Widget build(BuildContext context) => ClipRRect(
     borderRadius: BorderRadius.circular(16),
     child: AspectRatio(
       aspectRatio: 16 / 9,
-      child: WebViewWidget(controller: controller),
+      child: AbsorbPointer(child: WebViewWidget(controller: controller)),
     ),
   );
 }
