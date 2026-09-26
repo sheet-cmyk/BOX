@@ -1,12 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../../core/constants/app_assets.dart';
 import '../../../core/widgets/page_content.dart';
 import '../../../core/widgets/jbb_empty_state.dart';
 import '../../profile/providers/profile_provider.dart';
 import '../../booking/providers/booking_provider.dart';
 import '../providers/home_provider.dart';
-import '../widgets/welcome_header.dart';
+import '../widgets/home_hero_banner.dart';
 import '../widgets/next_session_card.dart';
 import '../widgets/quick_actions_grid.dart';
 import '../widgets/programs_section.dart';
@@ -18,28 +17,17 @@ class HomeScreen extends ConsumerWidget {
     final user = ref.watch(profileProvider).value,
         next = ref.watch(nextBookingProvider);
     return PageContent(
+      showHeader: false,
       refresh: () async {
         ref.invalidate(profileProvider);
         ref.invalidate(bookingsProvider);
         await ref.read(bookingsProvider.future);
       },
       children: [
-        WelcomeHeader(
+        HomeHeroBanner(
           name: (user?['fullName'] ?? 'Champion').toString().split(' ').first,
         ),
-        const SizedBox(height: 16),
-        Center(
-          child: ClipRRect(
-            borderRadius: BorderRadius.circular(16),
-            child: Image.asset(
-              AppAssets.homeHero,
-              width: 220,
-              fit: BoxFit.contain,
-              semanticLabel: 'Junior Boy Boxing',
-            ),
-          ),
-        ),
-        const SizedBox(height: 16),
+        const SizedBox(height: 20),
         if (next != null)
           NextSessionCard(booking: next)
         else
