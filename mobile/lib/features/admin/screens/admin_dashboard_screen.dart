@@ -2,8 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../core/theme/app_colors.dart';
+import '../../../core/utils/snackbar_utils.dart';
+import '../../../core/widgets/jbb_button.dart';
 import '../../../core/widgets/jbb_card.dart';
 import '../../../core/widgets/jbb_loading.dart';
+import '../../home/widgets/youtube_background_player.dart';
+import '../../profile/providers/profile_provider.dart';
 import '../providers/admin_provider.dart';
 import 'plan_editor_screen.dart';
 import 'template_editor_screen.dart';
@@ -45,6 +49,8 @@ class AdminDashboardScreen extends ConsumerWidget {
               ],
             ),
           ),
+          const SizedBox(height: 24),
+          const _PromoVideoSection(),
           const SizedBox(height: 24),
           Row(
             children: [
@@ -193,6 +199,82 @@ class AdminDashboardScreen extends ConsumerWidget {
             error: (e, s) => Text('Could not load schedule times: $e'),
             loading: () => const JbbLoading(),
           ),
+        ],
+      ),
+    );
+  }
+}
+
+/// Lets the admin set the YouTube video that plays silently and on loop
+/// near the top of Home. Leave the field empty to hide it.
+class _PromoVideoSection extends ConsumerStatefulWidget {
+  const _PromoVideoSection();
+  @override
+  ConsumerState<_PromoVideoSection> createState() => _PromoVideoSectionState();
+}
+
+class _PromoVideoSectionState extends ConsumerState<_PromoVideoSection> {
+  final url = TextEditingController();
+  bool loaded = false, busy = false;
+
+  @override
+  void dispose() {
+    url.dispose();
+    super.dispose();
+  }
+
+  Future<void> save() async {
+    final trimmed = url.text.trim();
+    if (trimmed.isNotEmpty && extractYoutubeId(trimmed) == null) {
+      showMessage(context, 'That doesn\'t look like a valid YouTube link.');
+      return;
+    }
+    setState(() => busy = true);
+    try {
+      await ref.read(adminRepositoryProvider).savePromoVideoUrl(trimmed);
+      if (mounted) {
+        showMessage(
+          context,
+          trimmed.isEmpty ? 'Video removed from Home.' : 'Video saved.',
+        );
+      }
+    } catch (e) {
+      if (mounted) showMessage(context, friendlyError(e));
+    } finally {
+      if (mounted) setState(() => busy = false);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final settings = ref.watch(settingsProvider).value;
+    if (!loaded && settings != null) {
+      url.text = settings['promoVideoUrl'] ?? '';
+      loaded = true;
+    }
+    return JbbCard(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text(
+            'Promo Video',
+            style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
+          ),
+          const SizedBox(height: 4),
+          const Text(
+            'Plays silently on loop at the top of Home. Paste a YouTube link, or clear it to hide the video.',
+            style: TextStyle(color: AppColors.muted, fontSize: 12),
+          ),
+          const SizedBox(height: 12),
+          TextField(
+            controller: url,
+            decoration: const InputDecoration(
+              labelText: 'YouTube link',
+              hintText: 'https://www.youtube.com/watch?v=...',
+            ),
+          ),
+          const SizedBox(height: 12),
+          JbbButton(label: 'Save Video', busy: busy, onPressed: save),
         ],
       ),
     );

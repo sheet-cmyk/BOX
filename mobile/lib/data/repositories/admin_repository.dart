@@ -24,6 +24,12 @@ class AdminRepository extends CachedRepository {
   Future<void> deleteTemplate(String id) =>
       db.doc('recurringTemplates/$id').delete();
 
+  Future<void> savePromoVideoUrl(String url) =>
+      db.doc('gymSettings/config').set({
+        'promoVideoUrl': url,
+        'updatedAt': FieldValue.serverTimestamp(),
+      }, SetOptions(merge: true));
+
   /// Verifies the admin PIN server-side; the PIN itself is never sent to
   /// or readable by any client.
   Future<void> verifyPin(String pin) =>
