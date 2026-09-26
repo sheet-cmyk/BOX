@@ -21,6 +21,16 @@ class ScheduleScreen extends ConsumerStatefulWidget {
 class _ScheduleState extends ConsumerState<ScheduleScreen> {
   DateTime day = gymTime(DateTime.now());
   @override
+  void initState() {
+    super.initState();
+    // Land on the nearest day that actually has a class instead of an
+    // empty "today" when the gym's schedule doesn't run every day.
+    ref.read(scheduleRepositoryProvider).nextSessionDate().then((next) {
+      if (mounted && next != null) setState(() => day = gymTime(next));
+    });
+  }
+
+  @override
   Widget build(BuildContext context) {
     final key = DateFormat('yyyy-MM-dd').format(day),
         programs = ref.watch(classesProvider).value ?? [];
