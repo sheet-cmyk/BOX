@@ -72,6 +72,8 @@ class MoreScreen extends ConsumerWidget {
           ('Privacy Policy', Icons.shield_outlined, '/privacy'),
           ('Terms of Service', Icons.description_outlined, '/terms'),
           ('Waiver & Disclaimer', Icons.gavel_outlined, '/waiver'),
+          if (user?['role'] == 'admin')
+            ('Admin Dashboard', Icons.admin_panel_settings_outlined, '/admin'),
         ])
           ListTile(
             contentPadding: EdgeInsets.zero,

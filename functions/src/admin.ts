@@ -37,6 +37,18 @@ export const exportBookingsCSV = callable(z.object({ from: z.string().datetime()
   return { csv, filename: `${input.collection}-${from.toISOString().slice(0, 10)}.csv` };
 }, true);
 
+// Second-factor PIN gate for the in-app admin dashboard. Only callable by
+// accounts already flagged role:'admin' (enforced by `callable(..., true)`),
+// so this is defense-in-depth, not the primary access control. The PIN's
+// hash lives in adminSecurity/pin, a collection no Firestore rule grants
+// client access to — it is only ever read here via the Admin SDK.
+export const verifyAdminPin = callable(z.object({ pin: z.string().regex(/^\d{4,8}$/) }), 'verifyAdminPin', async input => {
+  const doc = await db.doc('adminSecurity/pin').get();
+  const stored = doc.data()?.hash as string | undefined;
+  if (!stored || createHash('sha256').update(input.pin).digest('hex') !== stored) throw new HttpsError('permission-denied', 'Incorrect PIN.');
+  return { verified: true };
+}, true);
+
 export const contactGym = onCall({ enforceAppCheck, maxInstances: 5 }, async request => {
   const input = z.object({ name: z.string().min(2).max(100), email: z.email().max(254), message: z.string().min(10).max(4000), website: z.string().max(0).default('') }).safeParse(request.data);
   if (!input.success) throw new HttpsError('invalid-argument', 'Check your name, email and message.');

@@ -25,6 +25,7 @@ import '../../features/profile/screens/notifications_screen.dart';
 import '../../features/profile/screens/contact_screen.dart';
 import '../../features/profile/screens/payments_screen.dart';
 import '../../features/reviews/screens/reviews_screen.dart';
+import '../../features/admin/screens/admin_pin_screen.dart';
 import '../widgets/jbb_bottom_nav.dart';
 import '../constants/app_strings.dart';
 
@@ -66,6 +67,9 @@ final routerProvider = Provider<GoRouter>((ref) {
         return '/complete-profile';
 }
       if (user != null && isAuth) return '/home';
+      if (state.uri.path == '/admin' && profile.value?['role'] != 'admin') {
+        return '/home';
+}
       return null;
     },
     routes: [
@@ -111,6 +115,7 @@ final routerProvider = Provider<GoRouter>((ref) {
       ),
       GoRoute(path: '/payments', builder: (c, s) => const PaymentsScreen()),
       GoRoute(path: '/reviews', builder: (c, s) => const ReviewsScreen()),
+      GoRoute(path: '/admin', builder: (c, s) => const AdminPinScreen()),
       GoRoute(path: '/contact', builder: (c, s) => const ContactScreen()),
       GoRoute(
         path: '/about',
