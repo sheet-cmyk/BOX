@@ -22,7 +22,7 @@ class QuickActionsGrid extends StatelessWidget {
         ('Contact', Icons.phone_outlined, '/contact'),
       ])
         JbbCard(
-          onTap: () => context.go(item.$3),
+          onTap: () => context.push(item.$3),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [

@@ -20,6 +20,7 @@ class StoreScreen extends ConsumerWidget {
       isAdmin ? productsAdminProvider : productsProvider,
     );
     return Scaffold(
+      appBar: AppBar(title: const Text('Gym Store')),
       floatingActionButton: isAdmin
           ? FloatingActionButton.extended(
               onPressed: () => Navigator.of(context).push(
@@ -32,7 +33,6 @@ class StoreScreen extends ConsumerWidget {
             )
           : null,
       body: PageContent(
-        title: 'Gym Store',
         children: [
           products.when(
             data: (rows) {

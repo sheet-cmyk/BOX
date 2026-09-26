@@ -30,7 +30,7 @@ class ProgramsSection extends StatelessWidget {
             button: true,
             label: 'View ${item.$2} schedule',
             child: InkWell(
-              onTap: () => context.go('/schedule'),
+              onTap: () => context.push('/schedule'),
               child: ClipRRect(
                 borderRadius: BorderRadius.circular(12),
                 child: Image.asset(
