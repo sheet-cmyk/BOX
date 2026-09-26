@@ -6,4 +6,5 @@ export { generateWeeklySchedule, generateScheduleNow, sendClassReminders, checkM
 export { purchaseMembership, createPaymentIntent, handleStripeWebhook, createRefund, recordManualPayment, getPaymentHistory } from './payments';
 export { sendNotification, sendAnnouncement, deliverNotificationOnCreate, retryNotifications, processAnnouncementOnCreate, continueAnnouncements } from './notifications';
 export { getDashboardStats, exportBookingsCSV, contactGym } from './admin';
+export { submitReview, deleteReview } from './reviews';
 export { acceptWaiver, publishWaiver } from './waiver';

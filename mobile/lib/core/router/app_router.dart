@@ -24,6 +24,7 @@ import '../../features/profile/screens/complete_profile_screen.dart';
 import '../../features/profile/screens/notifications_screen.dart';
 import '../../features/profile/screens/contact_screen.dart';
 import '../../features/profile/screens/payments_screen.dart';
+import '../../features/reviews/screens/reviews_screen.dart';
 import '../widgets/jbb_bottom_nav.dart';
 import '../constants/app_strings.dart';
 
@@ -109,6 +110,7 @@ final routerProvider = Provider<GoRouter>((ref) {
         builder: (c, s) => const NotificationsScreen(),
       ),
       GoRoute(path: '/payments', builder: (c, s) => const PaymentsScreen()),
+      GoRoute(path: '/reviews', builder: (c, s) => const ReviewsScreen()),
       GoRoute(path: '/contact', builder: (c, s) => const ContactScreen()),
       GoRoute(
         path: '/about',
