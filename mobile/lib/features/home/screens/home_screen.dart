@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../../core/constants/app_assets.dart';
 import '../../../core/widgets/page_content.dart';
 import '../../../core/widgets/jbb_empty_state.dart';
 import '../../profile/providers/profile_provider.dart';
@@ -26,6 +27,19 @@ class HomeScreen extends ConsumerWidget {
         WelcomeHeader(
           name: (user?['fullName'] ?? 'Champion').toString().split(' ').first,
         ),
+        const SizedBox(height: 16),
+        Center(
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(16),
+            child: Image.asset(
+              AppAssets.homeHero,
+              width: 220,
+              fit: BoxFit.contain,
+              semanticLabel: 'Junior Boy Boxing',
+            ),
+          ),
+        ),
+        const SizedBox(height: 16),
         if (next != null)
           NextSessionCard(booking: next)
         else
