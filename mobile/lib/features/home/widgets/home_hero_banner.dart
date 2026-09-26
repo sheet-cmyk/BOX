@@ -2,23 +2,21 @@ import 'package:flutter/material.dart';
 import '../../../core/constants/app_assets.dart';
 import '../../../core/theme/app_colors.dart';
 
-/// Full-screen-sized brand hero image for the top of Home, with the
-/// welcome greeting overlaid on a dark gradient scrim, followed by the
-/// gym's promotional banner strip directly beneath it.
+/// Square brand hero image at the top of Home, with the welcome
+/// greeting overlaid on a dark gradient scrim, followed by the gym's
+/// promotional banner strip directly beneath it.
 class HomeHeroBanner extends StatelessWidget {
   const HomeHeroBanner({super.key, required this.name});
   final String name;
   @override
   Widget build(BuildContext context) {
-    final screenHeight = MediaQuery.sizeOf(context).height;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         ClipRRect(
           borderRadius: BorderRadius.circular(20),
-          child: SizedBox(
-            width: double.infinity,
-            height: screenHeight * 0.65,
+          child: AspectRatio(
+            aspectRatio: 1,
             child: Stack(
               fit: StackFit.expand,
               children: [
