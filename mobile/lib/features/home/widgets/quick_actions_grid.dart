@@ -17,6 +17,8 @@ class QuickActionsGrid extends StatelessWidget {
         ('Book Class', Icons.sports_mma, '/book'),
         ('Class Schedule', Icons.calendar_month, '/schedule'),
         ('Membership', Icons.workspace_premium, '/membership'),
+        ('Gym Store', Icons.shopping_bag_outlined, '/store'),
+        ('Reviews', Icons.star_outline, '/reviews'),
         ('Contact', Icons.phone_outlined, '/contact'),
       ])
         JbbCard(
