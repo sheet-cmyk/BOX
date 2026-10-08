@@ -3,13 +3,15 @@ import { FormEvent, useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { doc, serverTimestamp, updateDoc } from 'firebase/firestore';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
-import { db, storage } from '@/lib/firebase';
+import { db, storage, call } from '@/lib/firebase';
+import { useDocument } from '@/lib/hooks';
 import { useAuth } from './providers';
 import { composeAddress, errorMessage } from '@/lib/utils';
 import { AddressFields } from './address-fields';
 import { Button, Loading, Notice } from './ui';
 export function CompleteProfilePage() {
   const { user, profile, loading } = useAuth(), router = useRouter();
+  const waiver = useDocument('legalDocuments/waiver');
   const [busy,setBusy] = useState(false), [error,setError] = useState('');
   const [avatarUrl,setAvatarUrl] = useState('');
   useEffect(()=>{if(!loading&&!user)router.replace('/signin?next=/complete-profile');},[loading,user,router]);
@@ -28,6 +30,9 @@ export function CompleteProfilePage() {
     setBusy(true); setError('');
     try {
       await updateDoc(doc(db,'users',user!.uid), {fullName:profile?.fullName||'Member', childName:data.childName, childAge:Number(data.childAge), phone:data.phone, address, zipCode:data.zipCode, avatarUrl, updatedAt:serverTimestamp()});
+      if (waiver?.published) {
+        await call('acceptWaiver', {version:waiver.version, signerName:data.childName, capacity:Number(data.childAge)>=18?'participant':'guardian', adult:true, agree:true});
+      }
       const next = new URLSearchParams(window.location.search).get('next');
       router.push(next?.startsWith('/')&&!next.startsWith('//')?next:'/dashboard');
     } catch (e) { setError(errorMessage(e)); setBusy(false); }
@@ -40,6 +45,11 @@ export function CompleteProfilePage() {
     <label className="field">Participant age<input name="childAge" required type="number" min="1" max="120" defaultValue={profile?.childAge||''}/></label>
     <label className="field">Phone<input name="phone" required type="tel" pattern="[+0-9 ()-]{7,32}" autoComplete="tel" defaultValue={profile?.phone||''}/></label>
     <AddressFields defaultStreet={profile?.address||''} defaultZipCode={profile?.zipCode||''}/>
+    {waiver?.published && <>
+      <h3 style={{margin:0}}>{waiver.title}</h3>
+      <div className="card" style={{whiteSpace:'pre-wrap',lineHeight:1.7,maxHeight:260,overflowY:'auto',fontSize:13}}>{waiver.body}</div>
+      <label className="check-field"><input name="agree" type="checkbox" required/>I have read, understood, and accept the terms of participation</label>
+    </>}
     <Button busy={busy}>Continue →</Button>
   </form></div>;
 }

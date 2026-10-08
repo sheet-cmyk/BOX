@@ -11,7 +11,6 @@ import '../../features/sessions/models/session_model.dart';
 import '../../features/auth/presentation/providers/auth_provider.dart';
 import '../../features/auth/presentation/screens/welcome_screen.dart';
 import '../../features/home/presentation/screens/home_screen.dart';
-import '../../features/membership/presentation/screens/membership_screen.dart';
 import '../../features/profile/presentation/providers/profile_provider.dart';
 import '../../features/profile/presentation/screens/complete_profile_screen.dart';
 import '../../features/profile/presentation/screens/contact_screen.dart';
@@ -123,10 +122,6 @@ final routerProvider = Provider<GoRouter>((ref) {
         path: AppRoutes.store,
         name: 'store',
         builder: (c, s) => const StoreScreen(),
-      ),
-      GoRoute(
-        path: AppRoutes.membership,
-        builder: (c, s) => const MembershipScreen(),
       ),
       GoRoute(
         path: AppRoutes.completeProfile,

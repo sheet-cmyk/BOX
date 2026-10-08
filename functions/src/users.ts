@@ -74,12 +74,14 @@ export const updateMember = callable(z.object({ userId: id, fullName: z.string()
   return { success: true };
 }, true);
 
-export const addMember = callable(z.object({ email: z.email(), fullName: z.string().min(1).max(100), phone: z.string().max(32).default('') }), 'addMember', async input => {
-  const user = await auth.createUser({ email: input.email, displayName: input.fullName });
+export const addMember = callable(z.object({ email: z.email(), fullName: z.string().min(1).max(100), phone: z.string().max(32).default(''), password: z.string().min(6).max(100).optional() }), 'addMember', async input => {
+  const user = await auth.createUser({ email: input.email, displayName: input.fullName, ...(input.password ? { password: input.password } : {}) });
   await ensureUser(user);
   await db.doc(`users/${user.uid}`).update({ phone: input.phone });
-  await db.runTransaction(async tx => {
-    notify(tx, `invite_${user.uid}`, user.uid, 'Set up your account', 'Your gym account has been created. Use Forgot password on the sign-in page to securely set your password.', 'welcome');
-  });
+  if (!input.password) {
+    await db.runTransaction(async tx => {
+      notify(tx, `invite_${user.uid}`, user.uid, 'Set up your account', 'Your gym account has been created. Use Forgot password on the sign-in page to securely set your password.', 'welcome');
+    });
+  }
   return { userId: user.uid };
 }, true);

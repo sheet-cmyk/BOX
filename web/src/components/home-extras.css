@@ -4,6 +4,11 @@
 .home-social-link:hover{background:var(--red);color:var(--on-accent,#ffffff);border-color:var(--red);transform:translateY(-2px)}
 .home-social-link:focus-visible{outline:2px solid var(--red);outline-offset:3px}
 .home-social-link svg{display:block;flex-shrink:0}
+.home-social-link{cursor:pointer}
+.contact-menu{position:absolute;top:calc(100% + 10px);left:50%;transform:translateX(-50%);display:flex;gap:10px;padding:10px;background:var(--surface);border:1px solid var(--line);border-radius:16px;box-shadow:0 14px 34px -10px rgba(0,0,0,.35);z-index:20}
+@keyframes contactColorPulse{0%,100%{color:var(--red)}50%{color:var(--text)}}
+.contact-pulse{animation:contactColorPulse 1.6s ease-in-out infinite}
+.contact-pulse:hover{animation-play-state:paused;color:var(--on-accent,#ffffff);background:var(--red);border-color:var(--red)}
 
 .visit-us .section-heading{display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center}
 .visit-us .section-heading div{display:flex;flex-direction:column;align-items:center;text-align:center}

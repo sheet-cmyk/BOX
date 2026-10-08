@@ -20,7 +20,6 @@ import 'package:junior_boy_boxing/features/home/presentation/providers/home_prov
 import 'package:junior_boy_boxing/features/home/presentation/widgets/home_ads_section.dart';
 import 'package:junior_boy_boxing/features/home/data/home_ad_model.dart';
 import 'package:junior_boy_boxing/features/membership/data/membership_plan_model.dart';
-import 'package:junior_boy_boxing/features/membership/presentation/widgets/membership_plans_section.dart';
 import 'package:junior_boy_boxing/features/membership/presentation/providers/membership_provider.dart';
 import 'package:junior_boy_boxing/features/payments/presentation/providers/payments_provider.dart';
 import 'package:junior_boy_boxing/features/booking/presentation/providers/booking_provider.dart';
@@ -81,7 +80,6 @@ void main() {
     'blog': const BlogScreen(),
     'home': const Scaffold(body: HomeScreen()),
     'home ads': const Scaffold(body: HomeAdsSection()),
-    'membership plans': const Scaffold(body: MembershipPlansSection()),
     'notifications': const NotificationsScreen(),
     'complete profile': const CompleteProfileScreen(),
     'edit profile': const EditProfileScreen(),
